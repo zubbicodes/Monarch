@@ -1,13 +1,13 @@
 name: Release
 
 # A release is created automatically whenever a push to main changes the plugin
-# version (the "Version:" header in monarch-migration/monarch-migration.php) to one that has no
+# version (the "Version:" header in monarch-site-migration/monarch-site-migration.php) to one that has no
 # tag yet. Pushes that do not bump the version only run the checks.
 on:
   push:
     branches: [main]
     paths:
-      - 'monarch-migration/**'
+      - 'monarch-site-migration/**'
       - '.github/workflows/release.yml'
   workflow_dispatch:
 
@@ -29,11 +29,11 @@ jobs:
       - name: Read plugin version
         id: ver
         run: |
-          header=$(grep -m1 -E '^\s*\*\s*Version:' monarch-migration/monarch-migration.php | sed -E 's/.*Version:\s*//; s/\s+$//')
-          const=$(grep -m1 "MONARCH_VERSION'" monarch-migration/monarch-migration.php | sed -E "s/.*'MONARCH_VERSION',\s*'([^']+)'.*/\1/")
+          header=$(grep -m1 -E '^\s*\*\s*Version:' monarch-site-migration/monarch-site-migration.php | sed -E 's/.*Version:\s*//; s/\s+$//')
+          const=$(grep -m1 "MONARCH_VERSION'" monarch-site-migration/monarch-site-migration.php | sed -E "s/.*'MONARCH_VERSION',\s*'([^']+)'.*/\1/")
           echo "Header: $header  Constant: $const"
           if [ -z "$header" ] || [ "$header" != "$const" ]; then
-            echo "::error file=monarch-migration/monarch-migration.php::Version header ($header) and MONARCH_VERSION ($const) must match"
+            echo "::error file=monarch-site-migration/monarch-site-migration.php::Version header ($header) and MONARCH_VERSION ($const) must match"
             exit 1
           fi
           echo "version=$header" >> "$GITHUB_OUTPUT"
@@ -51,16 +51,16 @@ jobs:
           tools: none
 
       - name: Lint PHP (7.4)
-        run: find monarch-migration -name '*.php' -print0 | xargs -0 -n1 php -l
+        run: find monarch-site-migration -name '*.php' -print0 | xargs -0 -n1 php -l
 
       - name: Check JavaScript syntax
-        run: node --check monarch-migration/assets/admin.js
+        run: node --check monarch-site-migration/assets/admin.js
 
       - name: Build plugin zip
         if: steps.ver.outputs.exists == 'false'
         run: |
-          zip -r -X monarch-migration.zip monarch-migration -x '*.DS_Store' '*Thumbs.db'
-          unzip -l monarch-migration.zip | tail -1
+          zip -r -X monarch-site-migration.zip monarch-site-migration -x '*.DS_Store' '*Thumbs.db'
+          unzip -l monarch-site-migration.zip | tail -1
 
       - name: Create release
         if: steps.ver.outputs.exists == 'false'
@@ -69,12 +69,12 @@ jobs:
           VERSION: ${{ steps.ver.outputs.version }}
         run: |
           # Changelog entry for this version from readme.txt (if present).
-          awk -v v="= $VERSION =" '$0==v{f=1;next} /^= /{f=0} f' monarch-migration/readme.txt > notes.md || true
+          awk -v v="= $VERSION =" '$0==v{f=1;next} /^= /{f=0} f' monarch-site-migration/readme.txt > notes.md || true
           {
             echo
-            echo "Install **monarch-migration.zip** (not the \"Source code\" archive): Plugins → Add New → Upload Plugin → *Replace current with uploaded*."
+            echo "Install **monarch-site-migration.zip** (not the \"Source code\" archive): Plugins → Add New → Upload Plugin → *Replace current with uploaded*."
           } >> notes.md
-          gh release create "v$VERSION" monarch-migration.zip \
+          gh release create "v$VERSION" monarch-site-migration.zip \
             --target "$GITHUB_SHA" \
             --title "Monarch $VERSION" \
             --notes-file notes.md \

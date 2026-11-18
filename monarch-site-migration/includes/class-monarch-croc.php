@@ -176,13 +176,13 @@ class Monarch_Croc {
 	public static function install() {
 		$asset = self::asset();
 		if ( ! $asset ) {
-			return new WP_Error( 'pb_croc_os', __( 'No croc build is available for this server (unknown OS/CPU). Set a custom croc path in Settings.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_croc_os', __( 'No croc build is available for this server (unknown OS/CPU). Set a custom croc path in Settings.', 'monarch-site-migration' ) );
 		}
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		$base = 'https://github.com/schollz/croc/releases/download/v' . self::VERSION . '/';
 		$sums = wp_remote_get( $base . 'croc_v' . self::VERSION . '_checksums.txt', array( 'timeout' => 30 ) );
 		if ( is_wp_error( $sums ) || 200 !== wp_remote_retrieve_response_code( $sums ) ) {
-			return new WP_Error( 'pb_croc_dl', __( 'Could not reach GitHub to download croc. Your host may block outgoing connections.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_croc_dl', __( 'Could not reach GitHub to download croc. Your host may block outgoing connections.', 'monarch-site-migration' ) );
 		}
 		$expected = '';
 		foreach ( preg_split( '/\r?\n/', wp_remote_retrieve_body( $sums ) ) as $line ) {
@@ -191,7 +191,7 @@ class Monarch_Croc {
 			}
 		}
 		if ( ! $expected ) {
-			return new WP_Error( 'pb_croc_sum', __( 'Checksum for croc not found; refusing to install.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_croc_sum', __( 'Checksum for croc not found; refusing to install.', 'monarch-site-migration' ) );
 		}
 		$tmp = download_url( $base . $asset, 300 );
 		if ( is_wp_error( $tmp ) ) {
@@ -199,7 +199,7 @@ class Monarch_Croc {
 		}
 		if ( ! hash_equals( $expected, hash_file( 'sha256', $tmp ) ) ) {
 			@unlink( $tmp ); // phpcs:ignore
-			return new WP_Error( 'pb_croc_sum', __( 'croc download failed the SHA-256 check; it was deleted.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_croc_sum', __( 'croc download failed the SHA-256 check; it was deleted.', 'monarch-site-migration' ) );
 		}
 		$bin_dir = Monarch_Storage::dir( 'bin' );
 		$name    = self::is_windows() ? 'croc.exe' : 'croc';
@@ -234,7 +234,7 @@ class Monarch_Croc {
 		@unlink( $tmp ); // phpcs:ignore
 		if ( ! $ok || ! is_file( $work . '/' . $name ) ) {
 			Monarch_Storage::rrmdir( $work );
-			return new WP_Error( 'pb_croc_extract', __( 'Could not extract croc (needs the Phar or Zip PHP extension).', 'monarch-migration' ) );
+			return new WP_Error( 'pb_croc_extract', __( 'Could not extract croc (needs the Phar or Zip PHP extension).', 'monarch-site-migration' ) );
 		}
 		rename( $work . '/' . $name, $bin_dir . '/' . $name ); // phpcs:ignore
 		@chmod( $bin_dir . '/' . $name, 0755 ); // phpcs:ignore
@@ -305,10 +305,10 @@ class Monarch_Croc {
 	private static function spawn( $args, $code, $log, $cwd ) {
 		$bin = self::binary();
 		if ( ! $bin ) {
-			return new WP_Error( 'pb_croc_missing', __( 'croc is not installed yet.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_croc_missing', __( 'croc is not installed yet.', 'monarch-site-migration' ) );
 		}
 		if ( ! self::can_exec() ) {
-			return new WP_Error( 'pb_croc_exec', __( 'Your host disabled proc_open(), so croc cannot run on this server. Use the manual command or the upload option instead.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_croc_exec', __( 'Your host disabled proc_open(), so croc cannot run on this server. Use the manual command or the upload option instead.', 'monarch-site-migration' ) );
 		}
 		$config = Monarch_Storage::dir( 'croc' ) . '/config';
 		wp_mkdir_p( $config );
@@ -328,7 +328,7 @@ class Monarch_Croc {
 		}
 		$p = @proc_open( $cmd, array( 0 => array( 'pipe', 'r' ), 1 => array( 'pipe', 'w' ), 2 => array( 'pipe', 'w' ) ), $pipes, $cwd, $env ); // phpcs:ignore
 		if ( ! is_resource( $p ) ) {
-			return new WP_Error( 'pb_croc_start', __( 'Could not start croc.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_croc_start', __( 'Could not start croc.', 'monarch-site-migration' ) );
 		}
 		fclose( $pipes[0] ); // phpcs:ignore
 		$out = stream_get_contents( $pipes[1] );
@@ -348,11 +348,11 @@ class Monarch_Croc {
 	public static function send( $name, $code = '' ) {
 		$path = Monarch_Storage::backup_path( $name );
 		if ( ! $path || ! is_file( $path ) ) {
-			return new WP_Error( 'pb_nofile', __( 'Backup not found.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_nofile', __( 'Backup not found.', 'monarch-site-migration' ) );
 		}
 		$code = $code ? self::valid_code( $code ) : self::code();
 		if ( ! $code ) {
-			return new WP_Error( 'pb_code', __( 'The code phrase may only contain letters, numbers and dashes (6–64 characters).', 'monarch-migration' ) );
+			return new WP_Error( 'pb_code', __( 'The code phrase may only contain letters, numbers and dashes (6–64 characters).', 'monarch-site-migration' ) );
 		}
 		$sid = Monarch_Util::rand_id( 12 );
 		$log = Monarch_Storage::dir( 'croc' ) . '/' . $sid . '.log';
@@ -383,7 +383,7 @@ class Monarch_Croc {
 	public static function receive( $code ) {
 		$code = self::valid_code( $code );
 		if ( ! $code ) {
-			return new WP_Error( 'pb_code', __( 'Please enter a valid code phrase.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_code', __( 'Please enter a valid code phrase.', 'monarch-site-migration' ) );
 		}
 		$sid = Monarch_Util::rand_id( 12 );
 		$out = Monarch_Storage::dir( 'incoming' ) . '/croc-' . $sid;
@@ -433,7 +433,7 @@ class Monarch_Croc {
 	public static function poll( $sid ) {
 		$s = self::load( $sid );
 		if ( ! $s ) {
-			return new WP_Error( 'pb_sess', __( 'Transfer session not found.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_sess', __( 'Transfer session not found.', 'monarch-site-migration' ) );
 		}
 		$log   = is_file( $s['log'] ) ? (string) file_get_contents( $s['log'], false, null, max( 0, Monarch_Util::filesize( $s['log'] ) - 8192 ) ) : ''; // phpcs:ignore
 		$log   = str_replace( "\r", "\n", $log );
@@ -484,7 +484,7 @@ class Monarch_Croc {
 		if ( false === $alive && ! in_array( $state, array( 'done' ), true ) ) {
 			$state = 'error';
 			if ( '' === $last ) {
-				$last = __( 'croc stopped unexpectedly. Your host may block outgoing connections to the relay (TCP ports 9009–9013).', 'monarch-migration' );
+				$last = __( 'croc stopped unexpectedly. Your host may block outgoing connections to the relay (TCP ports 9009–9013).', 'monarch-site-migration' );
 			}
 		}
 		return array(

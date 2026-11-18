@@ -85,7 +85,7 @@ class Monarch_Plugin {
 	 * @return array
 	 */
 	public function links( $links ) {
-		array_unshift( $links, '<a href="' . esc_url( admin_url( 'admin.php?page=monarch-migration' ) ) . '">' . esc_html__( 'Migrate', 'monarch-migration' ) . '</a>' );
+		array_unshift( $links, '<a href="' . esc_url( admin_url( 'admin.php?page=monarch-site-migration' ) ) . '">' . esc_html__( 'Migrate', 'monarch-site-migration' ) . '</a>' );
 		return $links;
 	}
 
@@ -94,10 +94,10 @@ class Monarch_Plugin {
 	 */
 	public function menu() {
 		$this->hook = add_menu_page(
-			__( 'Monarch', 'monarch-migration' ),
-			__( 'Monarch', 'monarch-migration' ),
+			__( 'Monarch', 'monarch-site-migration' ),
+			__( 'Monarch', 'monarch-site-migration' ),
 			'manage_options',
-			'monarch-migration',
+			'monarch-site-migration',
 			array( $this, 'page' ),
 			'data:image/svg+xml;base64,' . base64_encode( (string) file_get_contents( MONARCH_DIR . 'assets/menu-icon.svg' ) ), // phpcs:ignore
 			76
@@ -116,8 +116,8 @@ class Monarch_Plugin {
 		Monarch_Storage::ensure();
 		Monarch_Storage::cleanup_stale();
 		$ver = MONARCH_VERSION . '.' . (int) max( @filemtime( MONARCH_DIR . 'assets/admin.css' ), @filemtime( MONARCH_DIR . 'assets/admin.js' ) ); // phpcs:ignore -- cache-bust on every build
-		wp_enqueue_style( 'monarch-migration', MONARCH_URL . 'assets/admin.css', array(), $ver );
-		wp_enqueue_script( 'monarch-migration', MONARCH_URL . 'assets/admin.js', array(), $ver, true );
+		wp_enqueue_style( 'monarch-site-migration', MONARCH_URL . 'assets/admin.css', array(), $ver );
+		wp_enqueue_script( 'monarch-site-migration', MONARCH_URL . 'assets/admin.js', array(), $ver, true );
 
 		$max_upload = (int) wp_max_upload_size();
 		$post_max   = Monarch_Util::to_bytes( ini_get( 'post_max_size' ) );
@@ -139,11 +139,11 @@ class Monarch_Plugin {
 		}
 
 		wp_localize_script(
-			'monarch-migration',
+			'monarch-site-migration',
 			'Monarch',
 			array(
 				'ajax'      => admin_url( 'admin-ajax.php' ),
-				'nonce'     => wp_create_nonce( 'monarch-migration' ),
+				'nonce'     => wp_create_nonce( 'monarch-site-migration' ),
 				'download'  => admin_url( 'admin-post.php?action=monarch_download&_wpnonce=' . wp_create_nonce( 'monarch_download' ) . '&name=' ),
 				'chunk'     => $chunk,
 				'home'      => home_url(),
@@ -183,8 +183,8 @@ class Monarch_Plugin {
 	 * Page shell (the UI is rendered by admin.js).
 	 */
 	public function page() {
-		echo '<div class="wrap pb-wrap"><h1 class="screen-reader-text">Monarch</h1><div id="monarch-app" class="pb-app" aria-live="polite"><div class="pb-loading">' . esc_html__( 'Loading…', 'monarch-migration' ) . '</div></div>';
-		echo '<noscript>' . esc_html__( 'Monarch needs JavaScript enabled.', 'monarch-migration' ) . '</noscript></div>';
+		echo '<div class="wrap pb-wrap"><h1 class="screen-reader-text">Monarch</h1><div id="monarch-app" class="pb-app" aria-live="polite"><div class="pb-loading">' . esc_html__( 'Loading…', 'monarch-site-migration' ) . '</div></div>';
+		echo '<noscript>' . esc_html__( 'Monarch needs JavaScript enabled.', 'monarch-site-migration' ) . '</noscript></div>';
 	}
 
 	/**
@@ -192,13 +192,13 @@ class Monarch_Plugin {
 	 */
 	public function ajax() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'monarch-migration' ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'monarch-site-migration' ) ), 403 );
 		}
-		if ( ! check_ajax_referer( 'monarch-migration', 'nonce', false ) ) {
+		if ( ! check_ajax_referer( 'monarch-site-migration', 'nonce', false ) ) {
 			wp_send_json_error(
 				array(
-					'message' => __( 'Your session expired. Please log in again.', 'monarch-migration' ),
-					'login'   => wp_login_url( admin_url( 'admin.php?page=monarch-migration' ) ),
+					'message' => __( 'Your session expired. Please log in again.', 'monarch-site-migration' ),
+					'login'   => wp_login_url( admin_url( 'admin.php?page=monarch-site-migration' ) ),
 				),
 				403
 			);
@@ -213,7 +213,7 @@ class Monarch_Plugin {
 			$method = 'do_' . $sub;
 			$result = $this->$method();
 		} catch ( Throwable $e ) {
-			wp_send_json_error( array( 'message' => $e->getMessage() ) );
+			wp_send_json_error( array( 'message' => wp_specialchars_decode( $e->getMessage(), ENT_QUOTES ) ) );
 		}
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
@@ -238,7 +238,7 @@ class Monarch_Plugin {
 	 */
 	private function do_export_start() {
 		if ( is_multisite() ) {
-			return new WP_Error( 'pb_ms', __( 'Multisite networks are not supported yet.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_ms', __( 'Multisite networks are not supported yet.', 'monarch-site-migration' ) );
 		}
 		$raw  = isset( $_POST['opts'] ) ? json_decode( wp_unslash( $_POST['opts'] ), true ) : array(); // phpcs:ignore
 		$opts = array();
@@ -260,7 +260,7 @@ class Monarch_Plugin {
 		$id  = preg_replace( '/[^a-z0-9]/', '', $this->post( 'id' ) );
 		$job = Monarch_Storage::load_job( $id );
 		if ( ! $job ) {
-			return new WP_Error( 'pb_job', __( 'This job no longer exists.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_job', __( 'This job no longer exists.', 'monarch-site-migration' ) );
 		}
 		$lock = Monarch_Storage::lock( $id );
 		if ( ! $lock ) {
@@ -282,12 +282,12 @@ class Monarch_Plugin {
 			if ( 'import' === $job['type'] ) {
 				$job['error'] = array(
 					'stage'   => $job['stage'],
-					'message' => $e->getMessage(),
+					'message' => wp_specialchars_decode( $e->getMessage(), ENT_QUOTES ),
 				);
 				Monarch_Storage::save_job( $job );
 				return Monarch_Import::progress( $job );
 			}
-			return new WP_Error( 'pb_step', $e->getMessage() );
+			return new WP_Error( 'pb_step', wp_specialchars_decode( $e->getMessage(), ENT_QUOTES ) );
 		}
 		if ( $p['done'] ) {
 			delete_option( self::ACTIVE_JOB );
@@ -326,7 +326,7 @@ class Monarch_Plugin {
 	private function do_import_inspect() {
 		$path = Monarch_Storage::backup_path( $this->post( 'name' ) );
 		if ( ! $path || ! is_file( $path ) ) {
-			return new WP_Error( 'pb_nofile', __( 'Backup not found.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_nofile', __( 'Backup not found.', 'monarch-site-migration' ) );
 		}
 		return Monarch_Import::inspect( $path );
 	}
@@ -339,7 +339,7 @@ class Monarch_Plugin {
 	private function do_import_start() {
 		$path = Monarch_Storage::backup_path( $this->post( 'name' ) );
 		if ( ! $path || ! is_file( $path ) ) {
-			return new WP_Error( 'pb_nofile', __( 'Backup not found.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_nofile', __( 'Backup not found.', 'monarch-site-migration' ) );
 		}
 		$extra = array();
 		$raw   = isset( $_POST['extra'] ) ? json_decode( wp_unslash( $_POST['extra'] ), true ) : array(); // phpcs:ignore
@@ -366,7 +366,7 @@ class Monarch_Plugin {
 		$id  = preg_replace( '/[^a-z0-9]/', '', $this->post( 'id' ) );
 		$job = Monarch_Storage::load_job( $id );
 		if ( ! $job ) {
-			return new WP_Error( 'pb_job', __( 'This job no longer exists.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_job', __( 'This job no longer exists.', 'monarch-site-migration' ) );
 		}
 		Monarch_Import::resolve( $job, 'skip' === $this->post( 'decision' ) ? 'skip' : 'retry' );
 		Monarch_Storage::save_job( $job );
@@ -392,7 +392,7 @@ class Monarch_Plugin {
 	private function do_delete_backup() {
 		$path = Monarch_Storage::backup_path( $this->post( 'name' ) );
 		if ( ! $path || ! is_file( $path ) ) {
-			return new WP_Error( 'pb_nofile', __( 'Backup not found.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_nofile', __( 'Backup not found.', 'monarch-site-migration' ) );
 		}
 		@unlink( $path ); // phpcs:ignore
 		return $this->do_backups();
@@ -406,7 +406,7 @@ class Monarch_Plugin {
 	private function upload_part() {
 		$name = Monarch_Storage::valid_name( $this->post( 'name' ) );
 		if ( ! $name ) {
-			return new WP_Error( 'pb_name', __( 'Please choose a .pbk file created by Monarch.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_name', __( 'Please choose a .pbk file created by Monarch.', 'monarch-site-migration' ) );
 		}
 		return Monarch_Storage::dir( 'incoming' ) . '/' . $name . '.part';
 	}
@@ -444,12 +444,12 @@ class Monarch_Plugin {
 			);
 		}
 		if ( empty( $_FILES['chunk']['tmp_name'] ) || ! is_uploaded_file( $_FILES['chunk']['tmp_name'] ) ) { // phpcs:ignore
-			return new WP_Error( 'pb_chunk', __( 'The upload chunk did not arrive. Your server may limit upload size.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_chunk', __( 'The upload chunk did not arrive. Your server may limit upload size.', 'monarch-site-migration' ) );
 		}
 		$in  = fopen( $_FILES['chunk']['tmp_name'], 'rb' ); // phpcs:ignore
 		$out = fopen( $part, 'ab' ); // phpcs:ignore
 		if ( ! $in || ! $out ) {
-			return new WP_Error( 'pb_chunk', __( 'Cannot write the uploaded file. Check free disk space.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_chunk', __( 'Cannot write the uploaded file. Check free disk space.', 'monarch-site-migration' ) );
 		}
 		stream_copy_to_stream( $in, $out );
 		fclose( $in ); // phpcs:ignore
@@ -561,11 +561,11 @@ class Monarch_Plugin {
 	 */
 	public function download() {
 		if ( ! current_user_can( 'manage_options' ) || ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'monarch_download' ) ) {
-			wp_die( esc_html__( 'Link expired. Reload the Monarch page and try again.', 'monarch-migration' ), 403 );
+			wp_die( esc_html__( 'Link expired. Reload the Monarch page and try again.', 'monarch-site-migration' ), 403 );
 		}
 		$path = Monarch_Storage::backup_path( isset( $_GET['name'] ) ? sanitize_text_field( wp_unslash( $_GET['name'] ) ) : '' );
 		if ( ! $path || ! is_file( $path ) ) {
-			wp_die( esc_html__( 'Backup not found.', 'monarch-migration' ), 404 );
+			wp_die( esc_html__( 'Backup not found.', 'monarch-site-migration' ), 404 );
 		}
 		$size  = Monarch_Util::filesize( $path );
 		$start = 0;

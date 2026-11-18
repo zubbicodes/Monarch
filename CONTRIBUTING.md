@@ -47,7 +47,7 @@ This starts two WordPress sites built to be as different as possible:
 | Source | http://localhost:8081 | 7.4 | MySQL 8 | `src_` |
 | Destination | http://localhost:8082 | 8.3 | MariaDB 10.4, `max_allowed_packet` = 256 KB | `dst_` |
 
-The `monarch-migration/` folder is mounted into both sites, so your edits apply immediately. No build step is needed.
+The `monarch-site-migration/` folder is mounted into both sites, so your edits apply immediately. No build step is needed.
 
 ### Running the end-to-end test
 
@@ -79,11 +79,11 @@ docker compose down -v
 
 ```bash
 # PHP syntax on the oldest and newest supported versions
-docker run --rm -v "$PWD/monarch-migration:/p" php:7.4-cli sh -c 'find /p -name "*.php" -exec php -l {} \;'
-docker run --rm -v "$PWD/monarch-migration:/p" php:8.3-cli sh -c 'find /p -name "*.php" -exec php -l {} \;'
+docker run --rm -v "$PWD/monarch-site-migration:/p" php:7.4-cli sh -c 'find /p -name "*.php" -exec php -l {} \;'
+docker run --rm -v "$PWD/monarch-site-migration:/p" php:8.3-cli sh -c 'find /p -name "*.php" -exec php -l {} \;'
 
 # JavaScript syntax
-node --check monarch-migration/assets/admin.js
+node --check monarch-site-migration/assets/admin.js
 ```
 
 GitHub Actions runs the PHP 7.4 and JavaScript checks on every push to `main`.
@@ -96,8 +96,8 @@ Monarch has to work on cheap shared hosting, so these rules matter more than usu
 
 - **No dependencies.** Plain PHP 7.4+, vanilla JavaScript and CSS: no Composer packages, npm packages or build step.
 - **Follow the [WordPress Coding Standards](https://developer.wordpress.org/coding-standards/wordpress-coding-standards/):** tabs, Yoda conditions, `array()` syntax and DocBlocks on every method.
-- **Classes are autoloaded.** `Monarch_Foo_Bar` lives in `monarch-migration/includes/class-monarch-foo-bar.php`.
-- **Prefix everything.** Options, hooks, AJAX actions and CSS classes use `monarch-migration` / `pb-`.
+- **Classes are autoloaded.** `Monarch_Foo_Bar` lives in `monarch-site-migration/includes/class-monarch-foo-bar.php`.
+- **Prefix everything.** Options, hooks, AJAX actions and CSS classes use `monarch-site-migration` / `pb-`.
 
 ### Long-running work
 
@@ -134,16 +134,16 @@ Monarch has to work on cheap shared hosting, so these rules matter more than usu
 Maintainers release by bumping the version number. Nothing else needs to be done by hand.
 
 1. Update the version in three places:
-   - the `Version:` header in `monarch-migration/monarch-migration.php`;
+   - the `Version:` header in `monarch-site-migration/monarch-site-migration.php`;
    - the `MONARCH_VERSION` constant in the same file;
-   - `Stable tag:` in `monarch-migration/readme.txt`.
-2. Add a `= x.y.z =` section at the top of the changelog in `monarch-migration/readme.txt`.
+   - `Stable tag:` in `monarch-site-migration/readme.txt`.
+2. Add a `= x.y.z =` section at the top of the changelog in `monarch-site-migration/readme.txt`.
 3. Push to `main`.
 
 The [Release workflow](.github/workflows/release.yml) then:
 - checks that both version numbers match;
 - lints the code;
-- builds `monarch-migration.zip`;
+- builds `monarch-site-migration.zip`;
 - publishes release `vX.Y.Z` with the changelog entry as release notes.
 
 Pushes that don't change the version only run the checks.

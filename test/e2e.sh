@@ -114,7 +114,7 @@ const checks = {
   'admin password from source': d.admin_hash === s.admin_hash,
   'capabilities re-prefixed': d.caps_key >= 1,
   'user_roles re-prefixed': d.roles,
-  'Monarch still active': (d.active || []).includes('monarch-migration/monarch-migration.php'),
+  'Monarch still active': (d.active || []).includes('monarch-site-migration/monarch-site-migration.php'),
   '5 MB file identical': !!d.big_file_md5 && d.big_file_md5 === s.big_file_md5,
   '200 small files': d.small_files === 200,
   'other wp-content dirs': d.lang,

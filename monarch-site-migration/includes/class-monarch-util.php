@@ -152,17 +152,6 @@ class Monarch_Util {
 	}
 
 	/**
-	 * Raw mysqli handle from $wpdb, or null.
-	 *
-	 * @return mysqli|null
-	 */
-	public static function dbh() {
-		global $wpdb;
-		$dbh = isset( $wpdb->dbh ) ? $wpdb->dbh : null;
-		return ( $dbh instanceof mysqli ) ? $dbh : null;
-	}
-
-	/**
 	 * Run a raw SQL statement and return [ok, error, errno].
 	 *
 	 * @param string $sql SQL.
@@ -170,25 +159,21 @@ class Monarch_Util {
 	 */
 	public static function raw_query( $sql ) {
 		global $wpdb;
-		$dbh = self::dbh();
-		if ( $dbh ) {
-			try {
-				$res = mysqli_query( $dbh, $sql ); // phpcs:ignore
-			} catch ( Exception $e ) {
-				return array( false, $e->getMessage(), (int) $e->getCode() );
-			}
-			if ( false === $res ) {
-				return array( false, mysqli_error( $dbh ), mysqli_errno( $dbh ) );
-			}
-			if ( $res instanceof mysqli_result ) {
-				mysqli_free_result( $res );
-			}
-			return array( true, '', 0 );
+		$quiet = $wpdb->suppress_errors( true );
+		try {
+			$res = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery -- Statements come from the plugin's own SQL dump.
+		} catch ( Exception $e ) {
+			$wpdb->suppress_errors( $quiet );
+			return array( false, $e->getMessage(), (int) $e->getCode() );
 		}
-		$wpdb->suppress_errors( true );
-		$res = $wpdb->query( $sql ); // phpcs:ignore
-		$wpdb->suppress_errors( false );
-		return false === $res ? array( false, $wpdb->last_error, 0 ) : array( true, '', 0 );
+		$wpdb->suppress_errors( $quiet );
+		if ( false === $res ) {
+			// The MySQL error number drives the automatic repairs (collations, packet size, ...).
+			$errno = ( isset( $wpdb->dbh ) && $wpdb->dbh instanceof mysqli ) ? (int) $wpdb->dbh->errno : 0;
+			return array( false, $wpdb->last_error, $errno );
+		}
+		$wpdb->flush();
+		return array( true, '', 0 );
 	}
 
 	/**

@@ -53,14 +53,14 @@ class Monarch_Import {
 	public static function start( $file, $extra ) {
 		global $wpdb;
 		if ( is_multisite() ) {
-			return new WP_Error( 'pb_ms', __( 'Multisite networks are not supported yet.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_ms', __( 'Multisite networks are not supported yet.', 'monarch-site-migration' ) );
 		}
 		$m = Monarch_Archive::validate( $file );
 		if ( is_wp_error( $m ) ) {
 			return $m;
 		}
 		if ( ! empty( $m['multisite'] ) ) {
-			return new WP_Error( 'pb_ms', __( 'This backup comes from a multisite network, which is not supported yet.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_ms', __( 'This backup comes from a multisite network, which is not supported yet.', 'monarch-site-migration' ) );
 		}
 		$fh = fopen( $file, 'rb' ); // phpcs:ignore
 		fseek( $fh, 4 );
@@ -190,7 +190,7 @@ class Monarch_Import {
 				$p      = ( $job['db']['pos'] - ( $job['db']['end'] - $job['manifest']['db_size'] ) ) / max( 1, $job['manifest']['db_size'] );
 				$pct    = 60 * min( 1, max( 0, $p ) );
 				/* translators: 1: done, 2: total */
-				$detail = sprintf( __( 'Statement %1$s of %2$s', 'monarch-migration' ), number_format_i18n( $job['db']['index'] ), number_format_i18n( $job['db']['total'] ) );
+				$detail = sprintf( __( 'Statement %1$s of %2$s', 'monarch-site-migration' ), number_format_i18n( $job['db']['index'] ), number_format_i18n( $job['db']['total'] ) );
 				break;
 			case 'replace':
 				$t      = is_array( $job['replace']['tables'] ) ? count( $job['replace']['tables'] ) : 1;
@@ -201,7 +201,7 @@ class Monarch_Import {
 				$total  = max( 1, $job['manifest']['archive_size'] - $job['files']['start'] );
 				$pct    = ( $job['db'] ? 70 : 0 ) + ( $job['db'] ? 27 : 97 ) * min( 1, ( $job['files']['pos'] - $job['files']['start'] ) / $total );
 				/* translators: %s: count */
-				$detail = sprintf( __( '%s files restored', 'monarch-migration' ), number_format_i18n( $job['files']['count'] ) );
+				$detail = sprintf( __( '%s files restored', 'monarch-site-migration' ), number_format_i18n( $job['files']['count'] ) );
 				break;
 			case 'swap':
 				$pct = 98;
@@ -226,7 +226,7 @@ class Monarch_Import {
 			),
 			'error'   => $job['error'],
 			'done'    => 'done' === $job['stage'],
-			'login'   => wp_login_url( admin_url( 'admin.php?page=monarch-migration' ) ),
+			'login'   => wp_login_url( admin_url( 'admin.php?page=monarch-site-migration' ) ),
 			'source'  => $job['manifest']['home'],
 		);
 	}
@@ -242,7 +242,7 @@ class Monarch_Import {
 		if ( 'skip' === $action && 'db' === $job['stage'] ) {
 			$job['db']['skip'] = true;
 			/* translators: %d: statement */
-			Monarch_Export::log( $job, sprintf( __( 'Skipped statement #%d.', 'monarch-migration' ), $job['error']['statement'] ) );
+			Monarch_Export::log( $job, sprintf( __( 'Skipped statement #%d.', 'monarch-site-migration' ), $job['error']['statement'] ) );
 		}
 		$job['error'] = null;
 	}
@@ -487,7 +487,7 @@ class Monarch_Import {
 				fseek( $fh, $f['pos'] );
 				$h = Monarch_Archive::read_header( $fh );
 				if ( ! $h ) {
-					throw new Exception( 'The archive is corrupted near byte ' . $f['pos'] . '.' );
+					throw new Exception( esc_html( 'The archive is corrupted near byte ' . $f['pos'] . '.' ) );
 				}
 				if ( Monarch_Archive::END === $h['name'] ) {
 					$done = true;
@@ -534,7 +534,7 @@ class Monarch_Import {
 						$chunk = fread( $fh, (int) min( Monarch_Archive::PIECE, $cur['size'] - $cur['done'] ) ); // phpcs:ignore
 						if ( false === $chunk || '' === $chunk ) {
 							fclose( $out ); // phpcs:ignore
-							throw new Exception( 'Unexpected end of archive.' );
+							throw new Exception( esc_html( 'Unexpected end of archive.' ) );
 						}
 						fwrite( $out, $chunk ); // phpcs:ignore
 						$cur['done']  += strlen( $chunk );
@@ -589,7 +589,7 @@ class Monarch_Import {
 		if ( ! in_array( $tmp . 'options', $has, true ) ) {
 			$job['error'] = array(
 				'stage'   => 'swap',
-				'message' => __( 'The backup does not contain an options table, so it cannot be activated.', 'monarch-migration' ),
+				'message' => __( 'The backup does not contain an options table, so it cannot be activated.', 'monarch-site-migration' ),
 			);
 			return;
 		}
@@ -620,7 +620,7 @@ class Monarch_Import {
 		// Make sure Monarch stays active.
 		$active = $wpdb->get_var( "SELECT option_value FROM $opt WHERE option_name = 'active_plugins'" ); // phpcs:ignore
 		$list   = is_string( $active ) ? @unserialize( $active, array( 'allowed_classes' => false ) ) : array(); // phpcs:ignore
-		$list   = is_array( $list ) ? array_values( array_diff( $list, array( 'probackup/probackup.php' ) ) ) : array(); // Drop the plugin's former name.
+		$list   = is_array( $list ) ? array_values( array_diff( $list, array( 'probackup/probackup.php', 'monarch-migration/monarch-migration.php' ) ) ) : array(); // Drop the plugin's former names.
 		if ( ! in_array( MONARCH_BASENAME, $list, true ) ) {
 			$list[] = MONARCH_BASENAME;
 			Monarch_Util::raw_query( "DELETE FROM $opt WHERE option_name = 'active_plugins'" );
@@ -650,7 +650,7 @@ class Monarch_Import {
 			Monarch_Log::add( $job, 'Atomic table swap failed: ' . $err . ' — your live site was not changed', 'err' );
 			$job['error'] = array(
 				'stage'   => 'swap',
-				'message' => __( 'Could not activate the imported tables: ', 'monarch-migration' ) . $err,
+				'message' => __( 'Could not activate the imported tables: ', 'monarch-site-migration' ) . $err,
 			);
 			return;
 		}

@@ -183,22 +183,22 @@ class Monarch_Export {
 				$pct   = $w_db * min( 1, $p );
 				$table = isset( $job['db']['tables'][ $job['db']['ti'] ] ) ? $job['db']['tables'][ $job['db']['ti'] ]['name'] : '';
 				/* translators: %s: table name */
-				$label = sprintf( __( 'Exporting database — %s', 'monarch-migration' ), $table );
+				$label = sprintf( __( 'Exporting database — %s', 'monarch-site-migration' ), $table );
 				break;
 			case 'scan':
 				$pct = $w_db + 2;
 				/* translators: %s: count */
-				$label = sprintf( __( 'Scanning files — %s found', 'monarch-migration' ), number_format_i18n( $job['scan']['files'] ) );
+				$label = sprintf( __( 'Scanning files — %s found', 'monarch-site-migration' ), number_format_i18n( $job['scan']['files'] ) );
 				break;
 			case 'archive':
 				$total = max( 1, $job['scan']['bytes'] + ( $o['database'] ? $job['db']['sql_size'] : 0 ) );
 				$pct   = $w_db + $w_sc + $w_ar * min( 1, $job['arc']['bytes'] / $total );
 				/* translators: 1: done count, 2: total count */
-				$label = sprintf( __( 'Packing files — %1$s / %2$s', 'monarch-migration' ), number_format_i18n( $job['arc']['files'] ), number_format_i18n( $job['scan']['files'] ) );
+				$label = sprintf( __( 'Packing files — %1$s / %2$s', 'monarch-site-migration' ), number_format_i18n( $job['arc']['files'] ), number_format_i18n( $job['scan']['files'] ) );
 				break;
 			case 'done':
 				$pct   = 100;
-				$label = __( 'Export complete', 'monarch-migration' );
+				$label = __( 'Export complete', 'monarch-site-migration' );
 				break;
 		}
 		return array(
@@ -389,7 +389,7 @@ class Monarch_Export {
 		$last_rel     = '';
 		$fh = Monarch_Archive::open_append( $file, $a['size'] );
 		if ( ! $fh ) {
-			throw new Exception( 'Cannot write the archive. Check free disk space.' );
+			throw new Exception( esc_html( 'Cannot write the archive. Check free disk space.' ) );
 		}
 		if ( 'sql' === $a['stage'] ) {
 			$before = $a['cursor'] ? $a['cursor']['done'] : 0;

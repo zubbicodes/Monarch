@@ -2,13 +2,13 @@
 /**
  * Plugin Name:       Monarch – Site Migration
  * Description:       Lightweight whole-site migration. Chunked, resumable database export/import that never times out, plus encrypted peer-to-peer transfer powered by croc.
- * Version:           1.1.0
+ * Version:           1.1.1
  * Requires at least: 5.6
  * Requires PHP:      7.4
  * Author:            StratonAlly
  * License:           MIT
  * License URI:       https://opensource.org/licenses/MIT
- * Text Domain:       monarch-migration
+ * Text Domain:       monarch-site-migration
  *
  * @package Monarch
  */
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'MONARCH_VERSION', '1.1.0' );
+define( 'MONARCH_VERSION', '1.1.1' );
 define( 'MONARCH_FILE', __FILE__ );
 define( 'MONARCH_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MONARCH_URL', plugin_dir_url( __FILE__ ) );

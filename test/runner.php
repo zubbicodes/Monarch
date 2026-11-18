@@ -19,8 +19,8 @@ if ( 'install' === $do ) {
 }
 
 require_once ABSPATH . 'wp-admin/includes/plugin.php';
-if ( ! is_plugin_active( 'monarch-migration/monarch-migration.php' ) ) {
-	activate_plugin( 'monarch-migration/monarch-migration.php' );
+if ( ! is_plugin_active( 'monarch-site-migration/monarch-site-migration.php' ) ) {
+	activate_plugin( 'monarch-site-migration/monarch-site-migration.php' );
 	echo 'activated';
 	exit;
 }
@@ -114,7 +114,7 @@ if ( 'fingerprint' === $do ) {
 
 // Everything else goes through the real AJAX router.
 $_POST                = array_merge( $_GET, $_POST );
-$_POST['nonce']       = wp_create_nonce( 'monarch-migration' );
+$_POST['nonce']       = wp_create_nonce( 'monarch-site-migration' );
 $_POST['action']      = 'monarch_step';
 $_REQUEST             = $_POST;
 add_filter( 'wp_doing_ajax', '__return_true' );

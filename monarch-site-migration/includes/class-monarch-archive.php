@@ -166,11 +166,11 @@ class Monarch_Archive {
 	public static function validate( $file ) {
 		$fh = @fopen( $file, 'rb' ); // phpcs:ignore
 		if ( ! $fh ) {
-			return new WP_Error( 'pb_open', __( 'Cannot open the backup file.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_open', __( 'Cannot open the backup file.', 'monarch-site-migration' ) );
 		}
 		if ( fread( $fh, 4 ) !== self::MAGIC ) { // phpcs:ignore
 			fclose( $fh ); // phpcs:ignore
-			return new WP_Error( 'pb_magic', __( 'This is not a Monarch (.pbk) archive.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_magic', __( 'This is not a Monarch (.pbk) archive.', 'monarch-site-migration' ) );
 		}
 		$tail_len = self::HEADER_SIZE + strlen( self::END );
 		$size     = Monarch_Util::filesize( $file );
@@ -178,19 +178,19 @@ class Monarch_Archive {
 		$tail = fread( $fh, $tail_len ); // phpcs:ignore
 		if ( substr( (string) $tail, -strlen( self::END ) ) !== self::END ) {
 			fclose( $fh ); // phpcs:ignore
-			return new WP_Error( 'pb_incomplete', __( 'The archive is incomplete or truncated (it was not fully transferred). Please transfer it again.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_incomplete', __( 'The archive is incomplete or truncated (it was not fully transferred). Please transfer it again.', 'monarch-site-migration' ) );
 		}
 		fseek( $fh, 4 );
 		$h = self::read_header( $fh );
 		if ( ! $h || 'package.json' !== $h['name'] || $h['size'] > 50 * 1048576 ) {
 			fclose( $fh ); // phpcs:ignore
-			return new WP_Error( 'pb_manifest', __( 'The archive manifest is missing.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_manifest', __( 'The archive manifest is missing.', 'monarch-site-migration' ) );
 		}
 		$json = $h['size'] > 0 ? fread( $fh, (int) $h['size'] ) : ''; // phpcs:ignore
 		fclose( $fh ); // phpcs:ignore
 		$manifest = json_decode( (string) $json, true );
 		if ( ! is_array( $manifest ) || empty( $manifest['siteurl'] ) ) {
-			return new WP_Error( 'pb_manifest', __( 'The archive manifest is corrupted.', 'monarch-migration' ) );
+			return new WP_Error( 'pb_manifest', __( 'The archive manifest is corrupted.', 'monarch-site-migration' ) );
 		}
 		$manifest['archive_size'] = $size;
 		return $manifest;

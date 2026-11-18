@@ -118,8 +118,8 @@ Monarch must be installed on **both** the source and the destination site.
 
 ## Installation
 
-1. Download **`monarch-migration.zip`** from the [latest release](https://github.com/zubbicodes/Monarch/releases/latest).
-   > Use the `monarch-migration.zip` attachment, not GitHub's "Source code" archive, which also contains the test suite.
+1. Download **`monarch-site-migration.zip`** from the [latest release](https://github.com/zubbicodes/Monarch/releases/latest).
+   > Use the `monarch-site-migration.zip` attachment, not GitHub's "Source code" archive, which also contains the test suite.
 2. In WordPress, go to **Plugins → Add New → Upload Plugin**, choose the zip and click **Install Now**.
 3. Click **Activate**. **Monarch** appears in the admin menu.
 
@@ -321,7 +321,7 @@ No. Upload and download work on every host. croc is the faster and more convenie
 
 | Problem | Solution |
 |---------|----------|
-| WordPress says **"Incompatible Archive"** when installing | You uploaded the "Source code" zip or a damaged file. Download `monarch-migration.zip` from the release assets. |
+| WordPress says **"Incompatible Archive"** when installing | You uploaded the "Source code" zip or a damaged file. Download `monarch-site-migration.zip` from the release assets. |
 | The admin page still shows an old design after updating | Hard-refresh (Ctrl+F5) and purge any page or CDN cache (LiteSpeed, Cloudflare and similar). |
 | "This host does not allow running programs" | `proc_open()` is disabled. Use upload/download, or run croc on your computer with the commands shown. |
 | croc waits forever for the other side | Check that both sites use the same code phrase and the same relay, and that outgoing ports 9009–9013 are open. |
@@ -333,32 +333,32 @@ No. Upload and download work on every host. croc is the faster and more convenie
 ## Development
 
 ```
-monarch-migration/                  The plugin (this folder is what gets zipped)
-├── monarch-migration.php           Bootstrap, constants, autoloader
-├── uninstall.php                   Cleanup on plugin deletion
-├── readme.txt                      WordPress.org readme and changelog
+monarch-site-migration/                 The plugin (this folder is what gets zipped)
+├── monarch-site-migration.php          Bootstrap, constants, autoloader
+├── uninstall.php                       Cleanup on plugin deletion
+├── readme.txt                          WordPress.org readme and changelog
 ├── license.txt
 ├── assets/
-│   ├── admin.css                   Admin UI styles (WordPress-native)
-│   ├── admin.js                    Admin single-page app (vanilla JS)
-│   ├── menu-icon.svg               Single-color admin menu icon
-│   └── monarch-icon.png            Logo shown in the admin header
+│   ├── admin.css                       Admin UI styles (WordPress-native)
+│   ├── admin.js                        Admin single-page app (vanilla JS)
+│   ├── menu-icon.svg                   Single-color admin menu icon
+│   └── monarch-icon.png                Logo shown in the admin header
 └── includes/
-    ├── class-monarch-plugin.php    Admin page, AJAX router, download handler
-    ├── class-monarch-storage.php   Protected storage, job state, locks, settings
-    ├── class-monarch-archive.php   .pbk reader / writer
-    ├── class-monarch-export.php    Export step machine
-    ├── class-monarch-db-dump.php   Chunked SQL dump
-    ├── class-monarch-import.php    Import step machine and table swap
-    ├── class-monarch-db-import.php Statement-by-statement SQL import and repairs
-    ├── class-monarch-replace.php   Serialization-safe search and replace
-    ├── class-monarch-croc.php      croc install, send, receive, progress
-    ├── class-monarch-log.php       Live activity log
-    └── class-monarch-util.php      Timers, escaping, helpers
-test/                               Docker end-to-end test suite
-branding/                           Logo, icon sizes, wordmark, README banner
-.wordpress-org/                     Plugin directory icons and banners
-.github/workflows/                  Lint and automatic releases
+    ├── class-monarch-plugin.php        Admin page, AJAX router, download handler
+    ├── class-monarch-storage.php       Protected storage, job state, locks, settings
+    ├── class-monarch-archive.php       .pbk reader / writer
+    ├── class-monarch-export.php        Export step machine
+    ├── class-monarch-db-dump.php       Chunked SQL dump
+    ├── class-monarch-import.php        Import step machine and table swap
+    ├── class-monarch-db-import.php     Statement-by-statement SQL import and repairs
+    ├── class-monarch-replace.php       Serialization-safe search and replace
+    ├── class-monarch-croc.php          croc install, send, receive, progress
+    ├── class-monarch-log.php           Live activity log
+    └── class-monarch-util.php          Timers, escaping, helpers
+test/                                   Docker end-to-end test suite
+branding/                               Logo, icon sizes, wordmark, README banner
+.wordpress-org/                         Plugin directory icons and banners
+.github/workflows/                      Lint and automatic releases
 ```
 
 To run the full test (requires Docker, Node.js and Bash):
@@ -378,8 +378,8 @@ The test migrates a deliberately difficult site from MySQL 8 / PHP 7.4 to MariaD
 
 Releases are automatic. When a push to `main` changes the plugin version, the [Release workflow](.github/workflows/release.yml) does the following:
 - lints the code;
-- builds `monarch-migration.zip`;
-- publishes a GitHub release, using the matching changelog entry from `monarch-migration/readme.txt` as the release notes.
+- builds `monarch-site-migration.zip`;
+- publishes a GitHub release, using the matching changelog entry from `monarch-site-migration/readme.txt` as the release notes.
 
 See [all releases](https://github.com/zubbicodes/Monarch/releases).
 

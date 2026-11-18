@@ -2,9 +2,9 @@
 Contributors: stratonally
 Tags: migration, backup, clone, move site, croc
 Requires at least: 5.6
-Tested up to: 6.7
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -37,7 +37,7 @@ Requirements for croc mode: PHP proc_open() enabled and outgoing TCP to the rela
 
 == Installation ==
 
-1. Upload the `monarch-migration` folder to `/wp-content/plugins/` (or upload the zip in Plugins → Add New).
+1. Upload the `monarch-site-migration` folder to `/wp-content/plugins/` (or upload the zip in Plugins → Add New).
 2. Activate it on both the source and the destination site.
 3. Open Monarch in the admin menu.
 
@@ -57,8 +57,14 @@ Not yet.
 
 == Changelog ==
 
+= 1.1.1 =
+* WordPress.org readiness: plugin slug and text domain are now monarch-site-migration.
+* Database statements now run through $wpdb instead of direct mysqli calls.
+* Escaped exception messages; tested up to WordPress 7.1.
+* Coming from 1.1.0? Install this version, then delete the old "monarch-migration" plugin. Backups and settings are kept.
+
 = 1.1.0 =
-* ProBackup is now Monarch – Site Migration: new name, logo, admin menu icon and plugin folder (monarch-migration).
+* ProBackup is now Monarch – Site Migration: new name, logo, admin menu icon and plugin folder (monarch-site-migration).
 * Upgrading from ProBackup: Monarch takes over ProBackup's backups and settings automatically. Deactivate and delete ProBackup afterwards.
 * Existing .pbk packages remain fully compatible.
 

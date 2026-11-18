@@ -143,7 +143,7 @@ class Monarch_DB_Dump {
 		$req_table = '';
 		$fh = Monarch_Archive::open_append( $file, $st['sql_size'] );
 		if ( ! $fh ) {
-			throw new Exception( 'Cannot write the database dump file. Check free disk space and permissions.' );
+			throw new Exception( esc_html( 'Cannot write the database dump file. Check free disk space and permissions.' ) );
 		}
 		$done = false;
 		while ( ! Monarch_Util::out_of_time() ) {
@@ -318,7 +318,7 @@ class Monarch_DB_Dump {
 		}
 		$rows = $wpdb->get_results( $sql, ARRAY_N ); // phpcs:ignore
 		if ( $wpdb->last_error ) {
-			throw new Exception( 'Database read error on ' . $tb['name'] . ': ' . $wpdb->last_error );
+			throw new Exception( esc_html( 'Database read error on ' . $tb['name'] . ': ' . $wpdb->last_error ) );
 		}
 		return (array) $rows;
 	}

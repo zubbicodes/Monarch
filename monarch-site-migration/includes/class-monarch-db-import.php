@@ -325,9 +325,9 @@ class Monarch_DB_Import {
 					continue;
 				}
 			}
-			return $error ? $error : __( 'Unknown database error.', 'monarch-migration' );
+			return $error ? $error : __( 'Unknown database error.', 'monarch-site-migration' );
 		}
-		return isset( $error ) && $error ? $error : __( 'Unknown database error.', 'monarch-migration' );
+		return isset( $error ) && $error ? $error : __( 'Unknown database error.', 'monarch-site-migration' );
 	}
 
 	/**
@@ -423,7 +423,7 @@ class Monarch_DB_Import {
 	private static function too_big( $sql, $job ) {
 		return sprintf(
 			/* translators: 1: row size, 2: server limit */
-			__( 'A single database row is %1$s, but this MySQL server only accepts %2$s per query (max_allowed_packet). Ask your host to raise max_allowed_packet to at least 64M and click Retry — or Skip this row.', 'monarch-migration' ),
+			__( 'A single database row is %1$s, but this MySQL server only accepts %2$s per query (max_allowed_packet). Ask your host to raise max_allowed_packet to at least 64M and click Retry — or Skip this row.', 'monarch-site-migration' ),
 			size_format( strlen( $sql ), 1 ),
 			size_format( $job['caps']['packet'], 0 )
 		);
